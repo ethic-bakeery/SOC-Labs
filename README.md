@@ -5,8 +5,8 @@ A structured collection of labs and exercises for SOC analysts.
 ## 📚 Table of Contents
 
 ### [Email-Analysis](./Email-Analysis)
-- [Sample001](./Email-Analysis/sample001.md)
-- [Sample002](./Email-Analysis/sample002.md)
+- [Sample001](./Email-Analysis/sample004.md)
+- [Sample002](./Email-Analysis/sample005.md)
 
 ### [Incident-Response](./Incident-Response)
 - [Incident Case01](./Incident-Response/incident-case01.md)
