@@ -35,12 +35,12 @@ We first determine whether the received email is malicious or a false positive.
     ```
 
   - Sender IP: `147.182.193.196` → flagged **malicious** on [VirusTotal](https://www.virustotal.com/).
-    ![Criminal IP](/images/email/criminalIP.PNG)
+    ![Criminal IP](./images/email/criminalIP.PNG)
 
 - Found **Base64 encoded HTML**, decoded using CyberChef:
-  ![Decoded](/images/email/decode.PNG)
+  ![Decoded](./images/email/decode.PNG)
   Result: a **phishing link**, confirmed **malicious** on VirusTotal.
-  ![Malicious URL](/images/email/maliciousURL.PNG)
+  ![Malicious URL](./images/email/maliciousURL.PNG)
 
 ---
 
@@ -62,8 +62,8 @@ Key findings from the headers:
 
 - **Tools Used:** [MxToolbox Header Analyzer](https://mxtoolbox.com/Public/Tools/EmailHeaders.aspx?huid=9361be5a-e34a-4859-93be-8a726c9d0dcf)
 
-  ![Headers](/images/email/header.PNG)  
-  ![Failed Authentication](/images/email/failed.PNG)
+  ![Headers](./images/email/header.PNG)  
+  ![Failed Authentication](./images/email/failed.PNG)
 
 ---
 
@@ -74,7 +74,7 @@ Key findings from the headers:
 - Decoded HTML contains this **malicious URL**:  
   `https://function-9-zka7zvb73a-rj.a.run.app`
 
-  ![Decoded HTML](/image)
+  ![Decoded HTML](./images/email/decode.PNG)
 
 ### Phishing Breakdown:
 
@@ -105,12 +105,12 @@ Key findings from the headers:
   `https://function-9-zka7zvb73a-rj.a.run.app`
 
 - VirusTotal scan: **Flagged as malicious**
-  ![VirusTotal](/images/email/virustotal.PNG)
+  ![VirusTotal](./images/email/virustotal.PNG)
 
 - URLScan.io result:
   - Verdict: *Not currently malicious* (returns 404)
   - Might be taken down or inactive temporarily
-  ![URLScan](/images/email/urlscan.PNG)
+  ![URLScan](./images/email/urlscan.PNG)
 
 ---
 
