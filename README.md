@@ -33,5 +33,5 @@ A structured collection of labs and exercises for SOC analysts.
 - [Log Sample002](./Log-Analysis/log-sample002.md)
 
 ### [Malware-Analysis](./Malware-Analysis)
-- [Analysis Of Rat](./Malware-Analysis/analysis-of-rat.md)
-- [Analysis Of Ransomware](./Malware-Analysis/analysis-of-ransomware.md)
+- [Static Analysis](./Malware-Analysis/agenTesla.md)
+- [Dynamic Analysis](./Malware-Analysis/dynamic.md)
