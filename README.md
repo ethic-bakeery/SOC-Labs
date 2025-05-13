@@ -29,7 +29,7 @@ A structured collection of labs and exercises for SOC analysts.
 - [Endpoint Artifacts](./Endpoint-Detection/endpoint-artifacts.md)
 
 ### [Log-Analysis](./Log-Analysis)
-- [Log Sample001](./Log-Analysis/log-sample001.md)
+- [Log Analysis with Event Viewer](./Log-Analysis/event-viewer.md)
 - [Log Sample002](./Log-Analysis/log-sample002.md)
 
 ### [Malware-Analysis](./Malware-Analysis)
