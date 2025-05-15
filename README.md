@@ -21,8 +21,7 @@ A structured collection of labs and exercises for SOC analysts.
 - [Hunt C2 Traffic](./Threat-Hunting/hunt-c2-traffic.md)
 
 ### [Digital-Forensic](./Digital-Forensic)
-- [Disk Image Analysis](./Digital-Forensic/disk-image-analysis.md)
-- [Memory Dump Investigation](./Digital-Forensic/memory-dump-investigation.md)
+- [Memory Dump Investigation](./Digital-Forensic/Reminiscent.md)
 
 ### [Endpoint-Detection](./Endpoint-Detection)
 - [Edr Alert Investigation](./Endpoint-Detection/edr-alert-investigation.md)
