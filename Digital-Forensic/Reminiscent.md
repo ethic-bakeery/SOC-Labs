@@ -1,176 +1,154 @@
 
-# 🧠 Memory Dump Investigation – Reminiscent (HTB Challenge)
+# Reminiscent HTB Challenge - Memory Dump Investigation
 
-In this challenge, we are provided with a memory dump file named `flounder-pc-memdump.elf`. Alongside that, there are other supporting files, which are just for reference and to provide more context about the incident.
+This is the write-up of the Reminiscent HTB challenge. After downloading and extracting the files, I began the analysis.
 
-The main goal here is to analyze the memory dump and investigate what occurred, how it happened, and extract any potential indicators—especially the **flag**.
+> Note: The file we are analyzing is **flounder-pc-memdump.elf** because it is our memory dump. The others are there to give you more information about the challenge.
 
 ---
 
-## 📧 Initial Clue – Analyzing the Email
+## 📧 Resume Email Analysis
 
-I started the investigation by opening and carefully reading the `Resume.eml` file.
-
-This file contains a suspicious link:
+So, I began by reading the `Resume.eml` file to see what it contains. I read it carefully, including the embedded URLs. One happened to be:
 
 ```
 http://10.10.99.55:8080/resume.zip
 ```
 
-I took note of the IP address `10.10.99.55` as it might play a critical role in later analysis.
+So I take note of the IP address and begin the analysis.
 
 ---
 
-## 🧬 Memory Profiling
+## 🧠 Profiling the Memory Dump
 
-Before diving deep into the memory dump analysis, I first needed to determine the profile of the memory using **Volatility v2**.
-
-**Command run:**
-```bash
-volatility -f flounder-pc-memdump.elf imageinfo
-```
+We have to know the profile of the memory dump provided before moving further, so I use **Volatility version 2**.
 
 ![profile](./mem/hprofile.PNG)
 
-This command gives us the correct profile to use for further plugins.
-
 ---
 
-## 🌐 Network Connections – netscan
+## 🔍 Checking Network Connections
 
-To verify if any suspicious communication occurred (e.g., resume.zip being downloaded), I checked active and past connections using `netscan`.
+After obtaining the profile, I begin to check the running processes and see whether the resume was downloaded and run, which might execute a malicious process. I use the `netscan` plugin for this because it provides us with the source and foreign address of the communication established.
 
-**Command run:**
 ```bash
 volatility -f flounder-pc-memdump.elf --profile=Win7SP1x64 netscan
 ```
 
-![netscan](./mem/netscan1.PNG)  
-![netscan](./mem/netscan2.PNG)
+![netscan](./mem/netscan1.PNG)
+![netscab](./mem/netscan2.PNG)
 
-From the scan, I noticed a connection from the internal IP to the external IP `10.10.99.55`, triggered by the `powershell.exe` process. That raised suspicion.
+So from the above, I notice the IP address I found in the email link. It shows that the internal IP established a connection with the foreign IP and the process that was triggered is **powershell**. So from that, I got an idea that **powershell is involved** in this attack.
 
 ---
 
-## 📂 File Discovery – filescan
+## 🗂️ Searching for the Resume File
 
-I then searched for the suspicious `resume` file to confirm it was downloaded on the system.
+Then I move on to see whether the resume file was installed/downloaded on the computer (I mean the HR computer). For that, I use the `filescan` plugin and `grep` the string `resume`, and I found that the resume was downloaded on the user's Desktop.
 
-**Command run:**
 ```bash
-volatility -f flounder-pc-memdump.elf --profile=Win7SP1x64 filescan | grep resume
+volatility -f flounder-pc-memdump.elf --profile=Win7SP1x64 filescan | grep -i resume
 ```
 
 ![filescan](./mem/filescan.PNG)
 
-The file was located on the Desktop of the user.
-
 ---
 
-## 🧪 Extracting the LNK File
+## 📤 Dumping the Resume File (.lnk)
 
-Next, I dumped the `.lnk` file that looked suspicious (a shortcut file to launch the malicious process).
+So what's next is I use the `dumpfiles` plugin in Volatility to extract the `.lnk` file:
 
-**Command run:**
+✅ `-Q` is the physical offset from `filescan`  
+✅ `-D powershell_dump` is the directory where the dumped file will go
+
 ```bash
 volatility -f flounder-pc-memdump.elf --profile=Win7SP1x64 dumpfiles -Q <OFFSET> -D powershell_dump
 ```
 
-✅ Replace `<OFFSET>` with the physical offset found via `filescan`.  
-✅ `powershell_dump` is the directory to store the dumped file.
-
 ---
 
-## 🔎 Analyzing the LNK File
+## 🔡 Strings Analysis
 
-Once dumped, I ran the `strings` command on it:
+Then I run a `strings` command on the dumped file and I found an encoded string in it.
 
-**Command run:**
 ```bash
 strings powershell_dump/resume.lnk
 ```
 
-I discovered a long encoded PowerShell command that started with:
-
-```
-cABvAHcAZQByAHMAaABlAGwAbAAgAC0AbgBvAFAAIAAtAHMAdABh...
-```
-
-![string01](./mem/string01.PNG)  
+![string01](./mem/string01.PNG)
 ![string02](./mem/string02.PNG)
 
-It was clearly Base64-encoded PowerShell in UTF-16LE format.
+The string is very long; I did not capture the whole of it. But the above is the starting and the ending.
+
+Therefore I found it’s a PowerShell command embedded in the `.lnk` file.  
+That long string starting with `cABv...` looks like Base64-encoded UTF-16 PowerShell script (the mixed caps with lots of A, B, etc., is typical of UTF-16 Base64).
 
 ---
 
-## 🔓 Decoding Stage 1
+## 🧪 Decoding the First Stage Payload
 
-I decoded the initial Base64 UTF-16 string using:
+So I decode the UTF-16 little-endian Base64 string via command line.  
+It can also be done with Python as well.
 
-**Command run:**
 ```bash
 cat encoded.txt | base64 -d | iconv -f utf-16le -t utf-8
 ```
 
 ![decode](./mem/encode01.PNG)
 
-This revealed another base64-encoded PowerShell payload (second stage), embedded using the `-enc` flag.
+After decoding, it still contains another Base64-encoded string (the part after `-enc`), which is the actual encoded PowerShell command. So I decoded again.
 
 ---
 
-## 🔓 Decoding Stage 2
+## 🔓 Decoding the Second Stage Payload
 
-I extracted and decoded the second base64 string using the same technique:
-
-**Command run:**
 ```bash
 cat encode_stage2.txt | base64 -d | iconv -f utf-16le -t utf-8
 ```
 
-![encoded_second_stage](./mem/encoded_second_stage.PNG)
+![decode again](./mem/encoded_second_stage.PNG)
 
-The decoded output revealed a full PowerShell payload designed to:
-- Disable script block logging
-- Bypass AMSI
-- Use RC4 encryption
-- Set up a WebClient and send a request with a session cookie
-
-It finally downloaded a file from:
-```
-http://10.10.99.55:80/login/process.php
-```
-
-and attempted to decrypt it to execute further payloads.
+After decoding the second stage, it’s a PowerShell payload which is obfuscated but now readable.
 
 ---
 
 ## 🏁 Finding the Flag
 
-Towards the end of the script, I discovered the hardcoded flag:
-
-```
-HTB{redacted}
-```
+From that, I found the flag!
 
 ![flag](./mem/flag.PNG)
 
-(Flag hidden in red in the screenshot)
+But I hide the flag in red. 😉
 
 ---
 
 ## ✅ Summary of Commands Used
 
 ```bash
+# Identify memory profile
 volatility -f flounder-pc-memdump.elf imageinfo
+
+# Check network connections
 volatility -f flounder-pc-memdump.elf --profile=Win7SP1x64 netscan
-volatility -f flounder-pc-memdump.elf --profile=Win7SP1x64 filescan | grep resume
+
+# Search for resume file
+volatility -f flounder-pc-memdump.elf --profile=Win7SP1x64 filescan | grep -i resume
+
+# Dump the .lnk file
 volatility -f flounder-pc-memdump.elf --profile=Win7SP1x64 dumpfiles -Q <OFFSET> -D powershell_dump
+
+# Extract strings
 strings powershell_dump/resume.lnk
+
+# Decode base64 UTF-16LE
 cat encoded.txt | base64 -d | iconv -f utf-16le -t utf-8
+
+# Decode second stage
 cat encode_stage2.txt | base64 -d | iconv -f utf-16le -t utf-8
 ```
 
 ---
+
 
 ## 💡 Conclusion
 
