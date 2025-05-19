@@ -8,6 +8,8 @@ A structured collection of labs and exercises for SOC analysts.
 - [Sample001](./Email-Analysis/sample004.md)
 - [Sample002](./Email-Analysis/sample005.md)
 
+### [Incident Response](./Incident-Response)
+- [investigation into Volt Typhoon's activities](./Incident-Response/incident-case01.md)
 
 
 ### [Digital-Forensic](./Digital-Forensic)
